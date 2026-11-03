@@ -83,11 +83,16 @@ with sync_playwright() as p:
     boot.close()
 
     page = ctx.new_page()
+    page.set_default_timeout(8000)
 
     def go(route: str, settle: float = 2.5) -> None:
         page.goto(UI + route)
         page.wait_for_selector(".sidebar", timeout=60_000)
         time.sleep(settle)
+
+    def safe(fn):
+        try: fn()
+        except Exception as e: print('skip:', e)
 
     def shot(name: str) -> None:
         page.screenshot(path=str(OUT / f"{name}.png"))
@@ -129,25 +134,24 @@ with sync_playwright() as p:
     shot("03-discovery")
 
     go("/ports")
-    page.click("button:has-text('Detected')")
+    safe(lambda: page.click("button:has-text('Detected'), button:has-text('Détecté')"))
     time.sleep(1)
     shot("06-ports")
 
     go("/tools")
-    page.fill("input.input.mono", "github.com")
-    page.select_option("select", "MX")
-    page.click("button:has-text('Run')")
-    page.wait_for_selector("text=Result", timeout=30_000)
-    time.sleep(1)
+    safe(lambda: page.fill("input.input.mono", "github.com"))
+    safe(lambda: page.select_option("select", "MX"))
+    safe(lambda: page.click("button:has-text('Run'), button:has-text('Lancer')"))
+    time.sleep(2)
     shot("07-tools")
 
     go("/history")
     boxes = page.locator("tbody input[type=checkbox]")
-    boxes.nth(0).check()
-    boxes.nth(1).check()
+    safe(lambda: boxes.nth(0).check())
+    safe(lambda: boxes.nth(1).check())
     time.sleep(0.5)
     shot("08-history")
-    page.click("button:has-text('Compare')")
+    safe(lambda: page.click("button:has-text('Compare')"))
     time.sleep(1.5)
     shot("08-history-compare")
 
