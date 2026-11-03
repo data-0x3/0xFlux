@@ -1,0 +1,16 @@
+{
+  "name": "0xflux",
+  "private": true,
+  "version": "0.1.0",
+  "description": "0xFLUX — Network Intelligence & Monitoring Platform. Developed by 0x3.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev:web": "npm --prefix frontend run dev",
+    "build:web": "npm --prefix frontend run build",
+    "app": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

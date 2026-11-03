@@ -1,0 +1,71 @@
+# Builds the 0xFLUX Windows installer on GitHub's servers.
+# Actions tab -> "Build 0xFLUX installer" -> Run workflow, then download the
+# "0xFLUX-installer" artifact. Pushing a tag like v0.1.0 also publishes a release.
+name: Build 0xFLUX installer
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Freeze engine (PyInstaller)
+        shell: pwsh
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller==6.11.1
+          python -m PyInstaller flux_engine.spec --noconfirm --clean
+          New-Item -ItemType Directory -Force ../src-tauri/binaries | Out-Null
+          Copy-Item dist/0xflux-engine.exe ../src-tauri/binaries/0xflux-engine-x86_64-pc-windows-msvc.exe
+
+      - name: Smoke-test the frozen engine
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath src-tauri/binaries/0xflux-engine-x86_64-pc-windows-msvc.exe -PassThru -WindowStyle Hidden
+          $ok = $false
+          for ($i = 0; $i -lt 40; $i++) {
+            Start-Sleep -Seconds 1
+            try { $r = Invoke-RestMethod http://127.0.0.1:8787/api/health; if ($r.status -eq "ok") { $ok = $true; break } } catch {}
+          }
+          Invoke-RestMethod http://127.0.0.1:8787/api/capabilities | ConvertTo-Json -Depth 4
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          Get-Process 0xflux-engine* -ErrorAction SilentlyContinue | Stop-Process -Force
+          if (-not $ok) { throw "frozen engine did not answer /api/health" }
+
+      - name: Install JS dependencies
+        run: |
+          npm install --prefix frontend
+          npm install
+
+      - name: Build installer
+        run: npx tauri build --config src-tauri/tauri.release.conf.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 0xFLUX-installer
+          path: src-tauri/target/release/bundle/nsis/*.exe
+
+      - name: Publish release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/release/bundle/nsis/*.exe

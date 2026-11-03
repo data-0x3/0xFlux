@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "0xFLUX",
+  "version": "0.1.0",
+  "identifier": "net.ox3.oxflux",
+  "build": {
+    "frontendDist": "../frontend/dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev:web",
+    "beforeBuildCommand": "npm run build:web"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "0xFLUX",
+        "width": 1320,
+        "height": 840,
+        "minWidth": 1080,
+        "minHeight": 680,
+        "theme": "Dark",
+        "backgroundColor": "#080808"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:8787 ws://127.0.0.1:8787 blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "publisher": "0x3",
+    "shortDescription": "Network Intelligence & Monitoring",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../backend/app/": "backend/app/",
+      "../backend/requirements.txt": "backend/requirements.txt",
+      "../backend/run.py": "backend/run.py"
+    }
+  }
+}

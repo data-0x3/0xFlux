@@ -1,0 +1,100 @@
+/* 0xFLUX design system — monochrome network intelligence.
+   Palette is from the brief. Color appears ONLY to signal network state. */
+
+:root {
+  /* Surfaces (brief) */
+  --bg: #080808;
+  --bg-2: #101010;
+  --surface: #161616;
+  --surface-hi: #1b1b1b;
+  --border: #252525;
+  --border-hi: #333333;
+
+  /* Text (brief) */
+  --text: #ffffff;
+  --text-2: #929292;
+  --text-muted: #606060;
+
+  /* State signals — the only colour in the product, kept desaturated
+     so the UI stays monochrome until something needs attention. */
+  --state-open: #4ade80;     /* open port / host up */
+  --state-filtered: #e0b341; /* filtered / unknown */
+  --state-closed: #5a5a5a;   /* closed (reads as muted, not alarming) */
+  --state-down: #e05a5a;     /* host down / error */
+  --state-open-dim: rgba(74, 222, 128, 0.12);
+  --state-down-dim: rgba(224, 90, 90, 0.12);
+  --state-filtered-dim: rgba(224, 179, 65, 0.12);
+
+  /* Type */
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
+
+  /* Scale */
+  --t-xs: 11px;
+  --t-sm: 12px;
+  --t-base: 13px;
+  --t-md: 14px;
+  --t-lg: 16px;
+  --t-xl: 20px;
+  --t-2xl: 26px;
+
+  /* Rhythm */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 12px;
+  --r-4: 16px;
+  --r-5: 24px;
+  --r-6: 32px;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+  --sidebar-w: 232px;
+  --header-h: 52px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--t-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: #ffffff; color: #000000; }
+
+/* Scrollbar — thin, monochrome */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1, "zero" 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

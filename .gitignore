@@ -1,0 +1,22 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.0xflux/
+*.db
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Rust / Tauri
+src-tauri/target/
+
+# Misc
+.env
+.DS_Store
+node_modules/
+.pytest_cache/
+backend/build/
+backend/dist/
+src-tauri/binaries/
