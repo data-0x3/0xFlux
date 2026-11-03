@@ -25,7 +25,7 @@ a = Analysis(
     pathex=["."],
     hiddenimports=hidden,
     datas=datas,
-    excludes=["tkinter", "matplotlib", "IPython", "pytest", "numpy", "PIL"],
+    excludes=["tkinter", "matplotlib", "IPython", "pytest", "numpy"],
     noarchive=False,
 )
 pyz = PYZ(a.pure)
