@@ -68,3 +68,12 @@ export const IconSearch = (p: SVGProps<SVGSVGElement>) => (
 export const IconRefresh = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M13 7a5 5 0 1 0-1 4M13 3v4h-4" /></svg>
 );
+export const IconDev = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M6 5 2.5 8 6 11M10 5l3.5 3L10 11M8.6 3.5 7.4 12.5" /></svg>
+);
+export const IconTelegram = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M14 3 1.8 7.7c-.5.2-.5.9 0 1l3 1 1.2 3.6c.1.4.6.5.9.2L8.6 11l3 2.2c.4.3.9.1 1-.4L14.9 3.7c.1-.5-.4-.9-.9-.7z" /><path d="m6.8 9.7 4.3-4" /></svg>
+);
+export const IconGithub = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M8 1.6a6.4 6.4 0 0 0-2 12.5c.3 0 .4-.1.4-.3v-1.1c-1.8.4-2.2-.8-2.2-.8-.3-.8-.7-1-.7-1-.6-.4 0-.4 0-.4.6 0 1 .7 1 .7.6 1 1.5.7 1.9.6 0-.4.2-.7.4-.9-1.4-.2-2.9-.7-2.9-3.2 0-.7.2-1.3.7-1.7 0-.2-.3-.9.1-1.8 0 0 .5-.2 1.7.6a6 6 0 0 1 3 0c1.2-.8 1.7-.6 1.7-.6.4.9.1 1.6.1 1.8.4.4.7 1 .7 1.7 0 2.5-1.5 3-2.9 3.2.2.2.4.6.4 1.2v1.8c0 .2.1.4.4.3A6.4 6.4 0 0 0 8 1.6z" /></svg>
+);

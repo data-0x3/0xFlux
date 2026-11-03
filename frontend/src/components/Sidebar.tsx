@@ -2,7 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import { NavLink } from "react-router-dom";
 import {
   IconDiscovery, IconGhost, IconHistory, IconMonitor, IconOverview, IconPort,
-  IconReports, IconScanner, IconSettings, IconTools, IconTraffic,
+  IconDev, IconReports, IconScanner, IconSettings, IconTools, IconTraffic,
 } from "./icons";
 import type { Capabilities } from "../lib/api";
 import { useMode } from "../lib/mode";
@@ -22,6 +22,7 @@ const NAV: NavEntry[] = [
   { to: "/history", label: "Scan History", Icon: IconHistory },
   { to: "/reports", label: "Reports", Icon: IconReports },
   { to: "/settings", label: "Settings", Icon: IconSettings },
+  { to: "/developer", label: "Developer", Icon: IconDev },
 ];
 
 export function Sidebar({ caps }: { caps: Capabilities | null }) {

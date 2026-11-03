@@ -141,6 +141,9 @@ with sync_playwright() as p:
     go("/settings")
     shot("10-settings")
 
+    go("/developer", 3)
+    shot("11-developer")
+
     browser.close()
 
 traffic.terminate()

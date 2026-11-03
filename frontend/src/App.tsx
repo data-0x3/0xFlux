@@ -13,6 +13,7 @@ import Tools from "./pages/Tools";
 import History from "./pages/History";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Developer from "./pages/Developer";
 import { Boot } from "./components/Boot";
 
 function Shell() {
@@ -41,6 +42,7 @@ function Shell() {
               <Route path="/history" element={<History />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/developer" element={<Developer />} />
             </Routes>
           </motion.div>
         </AnimatePresence>
