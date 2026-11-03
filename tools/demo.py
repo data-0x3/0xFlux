@@ -78,7 +78,7 @@ def main():
 
         def cap(text, hold=0.0):
             page.evaluate(CAPTION_JS)
-            page.evaluate("window.__setCap(arguments[0])", text)
+            page.evaluate("(s) => window.__setCap(s)", text)
             if hold:
                 time.sleep(hold)
 
