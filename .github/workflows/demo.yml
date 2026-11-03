@@ -1,0 +1,64 @@
+name: Demo video
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - name: System tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q nmap ffmpeg
+
+      - name: Lab network
+        run: |
+          docker network create --subnet 172.30.0.0/28 fluxlab
+          docker run -d --name web      --net fluxlab --ip 172.30.0.2 nginx:alpine
+          docker run -d --name cache    --net fluxlab --ip 172.30.0.3 redis:7-alpine
+          docker run -d --name intranet --net fluxlab --ip 172.30.0.4 httpd:alpine
+          docker run -d --name files    --net fluxlab --ip 172.30.0.5 python:3.12-alpine python -m http.server 8000
+          docker pull -q curlimages/curl
+          echo "BRIDGE=br-$(docker network inspect -f '{{.Id}}' fluxlab | cut -c1-12)" >> "$GITHUB_ENV"
+
+      - name: Start engine (root)
+        run: |
+          python -m pip install -q -r backend/requirements.txt playwright==1.48.0
+          python -m playwright install --with-deps chromium
+          cd backend && sudo -E "$(which python)" flux_engine.py > ../engine.log 2>&1 &
+          for i in $(seq 1 40); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+
+      - name: Start interface
+        run: |
+          npm install --prefix frontend --no-audit --no-fund
+          nohup npm --prefix frontend run dev > vite.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:1420 >/dev/null && break; sleep 1; done
+
+      - name: Record
+        run: python tools/demo.py 172.30.0.0/28 "$BRIDGE"
+
+      - name: Encode mp4
+        run: |
+          mkdir -p docs/media
+          ffmpeg -y -i video/0xflux_raw.webm \
+            -vf "fps=30,scale=1440:900:flags=lanczos,format=yuv420p" \
+            -c:v libx264 -preset slow -crf 23 -movflags +faststart \
+            docs/media/0xflux-demo.mp4
+          ls -lh docs/media/0xflux-demo.mp4
+
+      - name: Commit video
+        run: |
+          git config user.name "0x3"
+          git config user.email "data-0x3@users.noreply.github.com"
+          git add docs/media/0xflux-demo.mp4
+          git commit -m "docs: presentation video [skip ci]" || exit 0
+          git push
