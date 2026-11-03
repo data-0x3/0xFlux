@@ -77,12 +77,13 @@ export default function Discovery() {
           {devices == null ? <Empty title="Loading…" /> : devices.length === 0 ? (
             <Empty title="No devices yet">Scan your local network to build the inventory. Each device keeps its first and last seen times.</Empty>
           ) : (
+            <div className="table-wrap">
             <table className="table">
               <thead><tr><th>IP address</th><th>Status</th><th>Hostname</th><th>MAC</th><th>Vendor</th>{advanced && <th>Open ports</th>}<th>First seen</th><th>Last seen</th></tr></thead>
               <tbody>
                 {devices.map((d) => (
                   <tr key={d.ip} className={focus === d.ip ? "sel" : ""} onMouseEnter={() => setFocus(d.ip)} onMouseLeave={() => setFocus(null)}>
-                    <td className="num">
+                    <td className="num nowrap">
                       {d.ip}
                       {d.is_gateway && <span className="tag">gateway</span>}
                       {d.is_self && <span className="tag">this PC</span>}
@@ -99,6 +100,7 @@ export default function Discovery() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </Card>
 

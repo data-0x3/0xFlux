@@ -186,11 +186,15 @@ async def inventory(online: Optional[set[str]] = None, local_ip: Optional[str] =
         rows = (await s.execute(select(Device))).scalars().all()
         rows = sorted(rows, key=lambda d: _ip_key(d.ip) if d.ip.count(".") == 3 else (999,))
         devices = []
+        latest = max((d.last_seen for d in rows), default=None)
         for d in rows:
-            if online is None:
-                status = "unknown"          # not swept in this session
-            else:
+            if online is not None:
                 status = "up" if d.ip in online else "not seen"
+            elif latest is not None:
+                # devices that answered in the most recent sweep are online
+                status = "up" if (latest - d.last_seen).total_seconds() < 120 else "not seen"
+            else:
+                status = "unknown"
             devices.append({
                 "ip": d.ip, "mac": d.mac, "hostname": d.hostname, "vendor": d.vendor,
                 "is_gateway": d.is_gateway, "is_self": d.ip == local_ip, "status": status,

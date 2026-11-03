@@ -55,7 +55,10 @@ export default function Traffic() {
           return next.length > MAX_ROWS ? next.slice(next.length - MAX_ROWS) : next;
         });
       }
-      if (m.stats) setStatus(m.stats);
+      if (m.stats) {
+        setStatus(m.stats);
+        if (m.stats.running && m.stats.iface) setIface(m.stats.iface);
+      }
     };
     return () => ws.close();
   }, [canCapture]);
