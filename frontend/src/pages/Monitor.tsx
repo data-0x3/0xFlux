@@ -59,9 +59,9 @@ export default function Monitor() {
   return (
     <Page title={t("monitor.title")} sub={connected ? "Live — system counters sampled every second." : "Connecting to the monitor…"}>
       <div className="grid stats-4 mb">
-        <Stat label="Download" value={bps(sample?.download_bps)} />
-        <Stat label="Upload" value={bps(sample?.upload_bps)} />
-        <Stat label="Latency" value={ms(sample?.latency_ms)} hint={latSummary ? `to ${latSummary.target}` : undefined} />
+        <Stat label={t("d.download")} value={bps(sample?.download_bps)} />
+        <Stat label={t("d.upload")} value={bps(sample?.upload_bps)} />
+        <Stat label={t("d.latency")} value={ms(sample?.latency_ms)} hint={latSummary ? `to ${latSummary.target}` : undefined} />
         <Stat label={`Transferred (last ${series.length}s)`} value={series.length ? bytes(totalBw) : "—"} />
       </div>
 

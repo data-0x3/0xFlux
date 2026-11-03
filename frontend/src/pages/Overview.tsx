@@ -45,29 +45,30 @@ export default function Overview() {
   const hosts = completed.reduce((a, s) => a + s.hosts_up, 0);
   const open = completed.reduce((a, s) => a + s.ports_open, 0);
   const onlineDevices = devices?.length ?? null;
-  const netStatus = lat == null ? "—" : lat.samples === 0 ? "—" : lat.avg_ms != null ? "online" : "no connectivity";
+  const netKey = lat == null || lat.samples === 0 ? "none" : lat.avg_ms != null ? "online" : "down";
+  const netStatus = netKey === "online" ? t("d.online") : netKey === "down" ? t("d.noconn") : "—";
 
   return (
     <Page title={t("overview.title")} sub={t("overview.sub")}>
       <div className="grid stats-4 mb">
-        <Stat label="Network status" value={netStatus}
-          tone={netStatus === "online" ? "open" : netStatus === "no connectivity" ? "down" : undefined}
+        <Stat label={t("d.netstatus")} value={netStatus}
+          tone={netKey === "online" ? "open" : netKey === "down" ? "down" : undefined}
           hint={lat?.loss_pct != null ? `${lat.loss_pct}% probe loss` : undefined} />
-        <Stat label="Active interface" value={iface === undefined ? "—" : iface?.name ?? "none"} mono
+        <Stat label={t("d.activeiface")} value={iface === undefined ? "—" : iface?.name ?? t("d.none")} mono
           hint={iface?.ipv4 ?? undefined} />
-        <Stat label="Download" value={bps(sample?.download_bps)} mono />
-        <Stat label="Upload" value={bps(sample?.upload_bps)} mono />
+        <Stat label={t("d.download")} value={bps(sample?.download_bps)} mono />
+        <Stat label={t("d.upload")} value={bps(sample?.upload_bps)} mono />
       </div>
       <div className="grid stats-4 mb">
-        <Stat label="Known devices" value={onlineDevices == null ? "—" : String(onlineDevices)}
+        <Stat label={t("d.knowndevices")} value={onlineDevices == null ? "—" : String(onlineDevices)}
           hint={onlineDevices === 0 ? "run Network Discovery" : undefined} />
-        <Stat label="Hosts discovered" value={scans == null ? "—" : String(hosts)} hint="across completed scans" />
-        <Stat label="Open ports found" value={scans == null ? "—" : String(open)} hint="across completed scans" />
-        <Stat label="Average latency" value={ms(lat?.avg_ms)} mono hint={lat ? `to ${lat.target}` : undefined} />
+        <Stat label={t("d.hostsfound")} value={scans == null ? "—" : String(hosts)} hint={t("d.recentscans") ? undefined : undefined} />
+        <Stat label={t("d.openfound")} value={scans == null ? "—" : String(open)} />
+        <Stat label={t("d.avglatency")} value={ms(lat?.avg_ms)} mono hint={lat ? `to ${lat.target}` : undefined} />
       </div>
 
       <Card className="mb">
-        <CardHead title="Network activity" hint="combined throughput, last 60 s" />
+        <CardHead title={t("d.netactivity")} hint={t("d.netactivity.sub")} />
         <div className="card-pad chart-120">
           {activity.length < 3 ? <Empty title="Collecting samples" /> : (
             <ResponsiveContainer width="100%" height="100%">
@@ -88,12 +89,12 @@ export default function Overview() {
 
       <div className="grid" style={{ gridTemplateColumns: "1.4fr 1fr", alignItems: "start" }}>
         <Card>
-          <CardHead title="Recent scans" right={<Link className="btn btn-ghost btn-sm" to="/history">View all</Link>} />
+          <CardHead title={t("d.recentscans")} right={<Link className="btn btn-ghost btn-sm" to="/history">{t("d.viewall")}</Link>} />
           {scans == null ? <Empty title="Loading…" /> : scans.length === 0 ? (
             <Empty title="No scans yet"><Link className="link" to="/scanner">Run your first scan</Link> to populate this view.</Empty>
           ) : (
             <table className="table">
-              <thead><tr><th>Target</th><th>Status</th><th>Hosts</th><th>Open</th><th>When</th></tr></thead>
+              <thead><tr><th>{t("d.target")}</th><th>{t("d.status")}</th><th>{t("d.hosts")}</th><th>{t("d.open")}</th><th>{t("d.when")}</th></tr></thead>
               <tbody>
                 {scans.slice(0, 6).map((s) => (
                   <tr key={s.id}>
@@ -110,15 +111,15 @@ export default function Overview() {
         </Card>
 
         <Card>
-          <CardHead title="Environment" right={<Link className="btn btn-ghost btn-sm" to="/settings">Details</Link>} />
+          <CardHead title={t("d.environment")} right={<Link className="btn btn-ghost btn-sm" to="/settings">{t("d.details")}</Link>} />
           <div className="card-pad">
             <dl className="kv kv-tight">
-              <dt>System</dt><dd>{caps ? `${caps.os} ${caps.os_release}` : "—"}</dd>
-              <dt>Privileges</dt><dd>{caps ? (caps.is_admin ? "administrator" : "standard user") : "—"}</dd>
-              <dt>Scan engine</dt><dd>{caps ? (caps.nmap.available ? "nmap" : "python (built-in)") : "—"}</dd>
-              <dt>Packet capture</dt>
+              <dt>{t("d.system")}</dt><dd>{caps ? `${caps.os} ${caps.os_release}` : "—"}</dd>
+              <dt>{t("d.privileges")}</dt><dd>{caps ? (caps.is_admin ? t("d.admin") : t("d.stduser")) : "—"}</dd>
+              <dt>{t("d.scanengine")}</dt><dd>{caps ? (caps.nmap.available ? "nmap" : "python (built-in)") : "—"}</dd>
+              <dt>{t("d.capture")}</dt>
               <dd style={{ color: caps?.pcap.available && caps?.scapy.available ? "var(--state-open)" : "var(--text-muted)" }}>
-                {caps ? (caps.pcap.available && caps.scapy.available ? "available" : "unavailable") : "—"}
+                {caps ? (caps.pcap.available && caps.scapy.available ? t("d.available") : t("d.unavailable")) : "—"}
               </dd>
             </dl>
             {devices && devices.length > 0 && (

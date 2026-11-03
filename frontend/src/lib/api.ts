@@ -101,7 +101,23 @@ export interface CaptureIface { id: string; name: string; description: string | 
 export interface CaptureStatus {
   running: boolean; session: number; iface: string | null; bpf: string | null;
   started_at: number | null; duration_s: number | null; packets: number; bytes: number;
-  protocols: Record<string, number>; top_talkers: [string, number][]; error: string | null;
+  protocols: Record<string, number>; top_talkers: [string, number][];
+  convo_count?: number; host_count?: number; error: string | null;
+}
+
+export interface Conversation {
+  a_ip: string; a_port: number | null; b_ip: string; b_port: number | null;
+  protocol: string; packets: number; bytes: number; a_to_b: number; b_to_a: number;
+  first: number; last: number; duration: number;
+}
+export interface Endpoint {
+  ip: string; packets: number; bytes: number; sent: number; recv: number; protocols: string[];
+}
+export interface CaptureStatistics {
+  protocols: { protocol: string; packets: number; pct: number }[];
+  io: { t: number; packets: number; bytes: number }[];
+  sizes: { range: string; count: number; pct: number }[];
+  stats: CaptureStatus;
 }
 
 export interface ScanRequest {
@@ -137,6 +153,10 @@ export const api = {
   captureStop: () => req<CaptureStatus>("/capture/stop", post()),
   captureClear: () => req<CaptureStatus>("/capture/clear", post()),
   captureStatus: () => req<CaptureStatus>("/capture/status"),
+  captureConversations: () => req<{ conversations: Conversation[] }>("/capture/conversations"),
+  captureEndpoints: () => req<{ endpoints: Endpoint[] }>("/capture/endpoints"),
+  captureStatistics: () => req<CaptureStatistics>("/capture/statistics"),
+  captureExportUrl: (fmt: "csv" | "json") => `${BASE}/capture/export.${fmt}`,
 
   history: (search?: string) => req<{ scans: ScanSummary[] }>(`/history${search ? `?q=${q(search)}` : ""}`),
   scan: (id: number) => req<ScanDetail>(`/history/${id}`),
@@ -154,22 +174,31 @@ export const api = {
   ipinfo: (ip: string) => req<any>(`/tools/ipinfo?ip=${q(ip)}`),
 };
 
-/** Download an export as a file without navigating the app window away. */
-export async function downloadExport(id: number, fmt: "json" | "csv" | "pdf"): Promise<void> {
+async function downloadBlob(url: string, filename: string): Promise<void> {
   let res: Response;
   try {
-    res = await fetch(`${BASE}/history/${id}/export.${fmt}`);
+    res = await fetch(url);
   } catch {
     throw new ApiError("Backend unreachable.", 0);
   }
   if (!res.ok) throw new ApiError(`Export failed (${res.status}).`, res.status);
   const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url;
-  a.download = `0xflux_scan_${id}.${fmt}`;
+  a.href = objectUrl;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+}
+
+/** Download a scan export without navigating the app window away. */
+export function downloadExport(id: number, fmt: "json" | "csv" | "pdf"): Promise<void> {
+  return downloadBlob(`${BASE}/history/${id}/export.${fmt}`, `0xflux_scan_${id}.${fmt}`);
+}
+
+/** Download the current capture metadata. */
+export function downloadCapture(fmt: "csv" | "json"): Promise<void> {
+  return downloadBlob(`${BASE}/capture/export.${fmt}`, `0xflux_capture.${fmt}`);
 }

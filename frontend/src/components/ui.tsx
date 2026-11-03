@@ -1,9 +1,10 @@
 // Small shared UI primitives.
+import type { CSSProperties as _CSS } from "react";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { IconClose, IconGhost } from "./icons";
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`card ${className}`}>{children}</div>;
+export function Card({ children, className = "", style }: { children: ReactNode; className?: string; style?: _CSS }) {
+  return <div className={`card ${className}`} style={style}>{children}</div>;
 }
 
 export function CardHead({ title, hint, right }: { title: string; hint?: string; right?: ReactNode }) {

@@ -48,6 +48,55 @@ async def status() -> dict:
     return capture.stats()
 
 
+@router.get("/conversations")
+async def conversations() -> dict:
+    return {"conversations": capture.conversations()}
+
+
+@router.get("/endpoints")
+async def endpoints() -> dict:
+    return {"endpoints": capture.endpoints()}
+
+
+@router.get("/statistics")
+async def statistics() -> dict:
+    return {
+        "protocols": capture.protocol_hierarchy(),
+        "io": capture.io_timeline(),
+        "sizes": capture.size_distribution(),
+        "stats": capture.stats(),
+    }
+
+
+@router.get("/export.csv")
+async def export_csv():
+    import csv
+    import io as _io
+
+    from fastapi.responses import Response
+    buf = _io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["no", "time", "protocol", "source", "sport", "destination", "dport",
+                "length", "flags", "info"])
+    for r in capture.export_rows():
+        w.writerow([r.get("id"), f'{r.get("t", 0):.6f}', r.get("protocol"), r.get("src"),
+                    r.get("sport"), r.get("dst"), r.get("dport"), r.get("length"),
+                    r.get("flags"), r.get("info")])
+    return Response(buf.getvalue(), media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="0xflux_capture.csv"'})
+
+
+@router.get("/export.json")
+async def export_json():
+    import json as _json
+
+    from fastapi.responses import Response
+    data = {"iface": capture.iface, "stats": capture.stats(),
+            "packets": capture.export_rows()}
+    return Response(_json.dumps(data, indent=2), media_type="application/json",
+                    headers={"Content-Disposition": 'attachment; filename="0xflux_capture.json"'})
+
+
 @router.websocket("/ws")
 async def stream(websocket: WebSocket):
     await websocket.accept()

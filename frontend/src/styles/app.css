@@ -403,3 +403,19 @@
 }
 
 .brand-logo { border-radius: 5px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255,255,255,.18)); }
+
+/* ---- traffic analyzer tabs ---- */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: var(--r-4); }
+.tab {
+  position: relative; display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 16px; background: transparent; border: none; color: var(--text-2);
+  font-size: var(--t-base); transition: color .12s var(--ease);
+}
+.tab:hover { color: var(--text); }
+.tab.on { color: var(--text); }
+.tab-badge { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); background: var(--bg-2); border: 1px solid var(--border); border-radius: 100px; padding: 1px 7px; }
+.tab.on .tab-badge { color: var(--text-2); border-color: var(--border-hi); }
+.tab-underline { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--text); border-radius: 2px; }
+.ep-bar { position: relative; height: 18px; display: flex; align-items: center; }
+.ep-bar > span { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 6px; background: var(--text-2); border-radius: 3px; }
+.ep-bar > em { position: relative; z-index: 1; font-style: normal; font-size: var(--t-xs); color: var(--text-muted); margin-left: auto; padding-left: 8px; }

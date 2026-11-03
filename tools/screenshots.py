@@ -105,13 +105,17 @@ with sync_playwright() as p:
     time.sleep(1.5)
     shot("02-scanner")
 
-    # Traffic Analyzer — select a TLS packet for the detail panel.
-    go("/traffic", 4)
+    # Traffic Analyzer — the new tabbed UI, one shot per tab.
+    go("/traffic", 5)
     tls = page.locator("tbody tr:has(td.mono:text-is('TLS'))")
-    target = tls.first if tls.count() else page.locator("tbody tr").first
-    target.click()
+    (tls.first if tls.count() else page.locator("tbody tr").first).click()
     time.sleep(0.8)
-    shot("04-traffic")
+    shot("04-traffic-packets")
+    for tabname, name in [("Conversations","04b-traffic-convos"),("Hôtes","04c-traffic-endpoints"),("Statistiques","04d-traffic-stats")]:
+        page.click(f".tab:has-text('{tabname}')")
+        time.sleep(2)
+        shot(name)
+    page.click(".tab:has-text('Paquets')"); time.sleep(0.5)
 
     go("/monitor", 22)
     shot("05-monitor")

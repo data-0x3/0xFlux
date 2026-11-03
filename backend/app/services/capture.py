@@ -161,11 +161,87 @@ class CaptureService:
         self.last_error: Optional[str] = None
         self._reset_stats()
 
+    SIZE_BUCKETS = [(0, 63), (64, 127), (128, 255), (256, 511), (512, 1023),
+                    (1024, 1517), (1518, 1 << 30)]
+    IO_WINDOW = 300  # seconds of I/O timeline kept
+
     def _reset_stats(self) -> None:
         self.packets = 0
         self.bytes = 0
         self.protocols: Counter[str] = Counter()
         self.talkers: Counter[str] = Counter()
+        # qui parle à qui — one row per bidirectional flow
+        self.convos: dict[tuple, dict] = {}
+        # per-IP totals
+        self.hosts: dict[str, dict] = {}
+        # per-second I/O buckets {second: [packets, bytes]}
+        self.io: dict[int, list[int]] = {}
+        # packet-length histogram
+        self.sizes: list[int] = [0] * len(self.SIZE_BUCKETS)
+
+    @staticmethod
+    def _convo_key(row: dict) -> tuple:
+        a = (row["src"], row["sport"])
+        b = (row["dst"], row["dport"])
+        return (a, b) if a <= b else (b, a)
+
+    def _track(self, row: dict) -> None:
+        """Update aggregate statistics for one packet (called under lock)."""
+        length = row["length"]
+        self.packets += 1
+        self.bytes += length
+        self.protocols[row["protocol"]] += 1
+
+        # size histogram
+        for i, (lo, hi) in enumerate(self.SIZE_BUCKETS):
+            if lo <= length <= hi:
+                self.sizes[i] += 1
+                break
+
+        # I/O timeline
+        sec = int(row["t"])
+        bucket = self.io.get(sec)
+        if bucket is None:
+            bucket = self.io[sec] = [0, 0]
+            if len(self.io) > self.IO_WINDOW:
+                for old in sorted(self.io)[:-self.IO_WINDOW]:
+                    self.io.pop(old, None)
+        bucket[0] += 1
+        bucket[1] += length
+
+        src, dst = row["src"], row["dst"]
+        if src:
+            self.talkers[src] += length
+            h = self.hosts.get(src) or self.hosts.setdefault(
+                src, {"packets": 0, "bytes": 0, "sent": 0, "recv": 0, "protocols": set()})
+            h["packets"] += 1; h["bytes"] += length; h["sent"] += length
+            h["protocols"].add(row["protocol"])
+        if dst:
+            h = self.hosts.get(dst) or self.hosts.setdefault(
+                dst, {"packets": 0, "bytes": 0, "sent": 0, "recv": 0, "protocols": set()})
+            h["packets"] += 1; h["bytes"] += length; h["recv"] += length
+            h["protocols"].add(row["protocol"])
+
+        # conversations (bidirectional)
+        if src and dst:
+            key = self._convo_key(row)
+            c = self.convos.get(key)
+            if c is None:
+                (a_ip, a_port), (b_ip, b_port) = key
+                c = self.convos[key] = {
+                    "a_ip": a_ip, "a_port": a_port, "b_ip": b_ip, "b_port": b_port,
+                    "protocol": row["protocol"], "packets": 0, "bytes": 0,
+                    "a_to_b": 0, "b_to_a": 0, "first": row["t"], "last": row["t"],
+                }
+            c["packets"] += 1
+            c["bytes"] += length
+            c["last"] = row["t"]
+            if row["protocol"] not in ("TCP", "UDP", "ARP", "OTHER"):
+                c["protocol"] = row["protocol"]  # prefer an application protocol
+            if (row["src"], row["sport"]) == key[0]:
+                c["a_to_b"] += 1
+            else:
+                c["b_to_a"] += 1
 
     @property
     def running(self) -> bool:
@@ -261,11 +337,7 @@ class CaptureService:
             row["id"] = self._seq
             row["t"] = float(getattr(pkt, "time", time.time()))
             self._buffer.append(row)
-            self.packets += 1
-            self.bytes += row["length"]
-            self.protocols[row["protocol"]] += 1
-            if row["src"]:
-                self.talkers[row["src"]] += row["length"]
+            self._track(row)
 
     def since(self, seq: int, limit: int = 500) -> list[dict]:
         with self._lock:
@@ -286,8 +358,45 @@ class CaptureService:
                 "bytes": self.bytes,
                 "protocols": dict(self.protocols),
                 "top_talkers": self.talkers.most_common(8),
+                "convo_count": len(self.convos),
+                "host_count": len(self.hosts),
                 "error": self.last_error,
             }
+
+    # ---------------------------------------------------------------- analytics
+    def conversations(self, limit: int = 300) -> list[dict]:
+        with self._lock:
+            rows = sorted(self.convos.values(), key=lambda c: c["bytes"], reverse=True)[:limit]
+            return [{**c, "duration": round(c["last"] - c["first"], 3)} for c in rows]
+
+    def endpoints(self, limit: int = 300) -> list[dict]:
+        with self._lock:
+            rows = sorted(self.hosts.items(), key=lambda kv: kv[1]["bytes"], reverse=True)[:limit]
+            return [{"ip": ip, "packets": h["packets"], "bytes": h["bytes"],
+                     "sent": h["sent"], "recv": h["recv"],
+                     "protocols": sorted(h["protocols"])} for ip, h in rows]
+
+    def io_timeline(self) -> list[dict]:
+        with self._lock:
+            return [{"t": sec, "packets": pb[0], "bytes": pb[1]}
+                    for sec, pb in sorted(self.io.items())]
+
+    def size_distribution(self) -> list[dict]:
+        labels = ["0–63", "64–127", "128–255", "256–511", "512–1023", "1024–1517", "1518+"]
+        with self._lock:
+            total = sum(self.sizes) or 1
+            return [{"range": labels[i], "count": n, "pct": round(n / total * 100, 1)}
+                    for i, n in enumerate(self.sizes)]
+
+    def protocol_hierarchy(self) -> list[dict]:
+        with self._lock:
+            total = sum(self.protocols.values()) or 1
+            items = sorted(self.protocols.items(), key=lambda kv: kv[1], reverse=True)
+            return [{"protocol": p, "packets": n, "pct": round(n / total * 100, 1)} for p, n in items]
+
+    def export_rows(self) -> list[dict]:
+        with self._lock:
+            return list(self._buffer)
 
 
 capture = CaptureService()
