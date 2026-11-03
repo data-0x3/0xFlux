@@ -419,3 +419,5 @@
 .ep-bar { position: relative; height: 18px; display: flex; align-items: center; }
 .ep-bar > span { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 6px; background: var(--text-2); border-radius: 3px; }
 .ep-bar > em { position: relative; z-index: 1; font-style: normal; font-size: var(--t-xs); color: var(--text-muted); margin-left: auto; padding-left: 8px; }
+.ep-bar > span { max-width: calc(100% - 72px); }
+.ep-bar > em { background: var(--surface); padding: 1px 4px; border-radius: 3px; }
