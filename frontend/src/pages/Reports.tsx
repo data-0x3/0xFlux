@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Empty, useToast } from "../components/ui";
 import { IconDownload } from "../components/icons";
 import { api, downloadExport, type ScanSummary } from "../lib/api";
@@ -12,6 +13,7 @@ const FORMATS = [
 ];
 
 export default function Reports() {
+  const { t } = useI18n();
   const toast = useToast();
   const [scans, setScans] = useState<ScanSummary[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function Reports() {
   }
 
   return (
-    <Page title="Reports" sub="Export any completed scan.">
+    <Page title={t("reports.title")} sub={t("reports.sub")}>
       <div className="grid stats-3 mb">
         {FORMATS.map((f) => (
           <Card key={f.id}><div className="stat"><div className="label">{f.name}</div><p className="small" style={{ color: "var(--text-2)", marginTop: 6 }}>{f.desc}</p></div></Card>

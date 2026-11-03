@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead } from "../components/ui";
 import { IconSpinner } from "../components/icons";
 import { api } from "../lib/api";
@@ -20,6 +21,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export default function Tools() {
+  const { t } = useI18n();
   const { caps } = useCaps();
   const { advanced } = useMode();
   const [tab, setTab] = useState<Tab>("dns");
@@ -59,7 +61,7 @@ export default function Tools() {
   };
 
   return (
-    <Page title="DNS & IP Tools" sub="Network utilities — every tool returns live results.">
+    <Page title={t("tools.title")} sub={t("tools.sub")}>
       <div className="seg" style={{ marginBottom: "var(--r-4)", flexWrap: "wrap" }}>
         {TABS.map((t) => (
           <button key={t.id} className={tab === t.id ? "on" : ""}

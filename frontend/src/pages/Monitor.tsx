@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Empty } from "../components/ui";
 import { ProtocolBars } from "../components/ProtocolBars";
 import {
@@ -21,6 +22,7 @@ const tooltipStyle = {
 const clock = (t: number) => new Date(t * 1000).toLocaleTimeString();
 
 export default function Monitor() {
+  const { t } = useI18n();
   const { advanced } = useMode();
   const [sample, setSample] = useState<MonitorSample | null>(null);
   const [series, setSeries] = useState<Point[]>([]);
@@ -55,7 +57,7 @@ export default function Monitor() {
   const totalBw = series.reduce((s, p) => s + (p.down ?? 0) + (p.up ?? 0), 0);
 
   return (
-    <Page title="Network Monitor" sub={connected ? "Live — system counters sampled every second." : "Connecting to the monitor…"}>
+    <Page title={t("monitor.title")} sub={connected ? "Live — system counters sampled every second." : "Connecting to the monitor…"}>
       <div className="grid stats-4 mb">
         <Stat label="Download" value={bps(sample?.download_bps)} />
         <Stat label="Upload" value={bps(sample?.upload_bps)} />

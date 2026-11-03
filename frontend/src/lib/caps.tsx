@@ -1,31 +1,49 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, type Capabilities } from "./api";
+
+export type EngineState = "connecting" | "online" | "offline";
 
 interface CapsState {
   caps: Capabilities | null;
-  online: boolean | null;   // null = still checking
+  state: EngineState;
+  online: boolean;            // convenience: state === "online"
   refresh: () => void;
 }
 
-const CapsCtx = createContext<CapsState>({ caps: null, online: null, refresh: () => {} });
+// How long to keep showing the clean "starting" screen before admitting the
+// engine is down. The bundled engine normally answers within ~2 s of launch.
+const GRACE_MS = 12_000;
+
+const CapsCtx = createContext<CapsState>({ caps: null, state: "connecting", online: false, refresh: () => {} });
 export const useCaps = () => useContext(CapsCtx);
 
 export function CapsProvider({ children }: { children: ReactNode }) {
   const [caps, setCaps] = useState<Capabilities | null>(null);
-  const [online, setOnline] = useState<boolean | null>(null);
+  const [state, setState] = useState<EngineState>("connecting");
+  const startedAt = useRef<number>(Date.now());
 
   const load = (force = false) =>
     (force ? api.refreshCapabilities() : api.capabilities())
-      .then((c) => { setCaps(c); setOnline(true); })
-      .catch(() => setOnline(false));
+      .then((c) => { setCaps(c); setState("online"); })
+      .catch(() => {
+        setState((prev) => {
+          if (prev === "online") return "online";               // stay usable once up
+          return Date.now() - startedAt.current > GRACE_MS ? "offline" : "connecting";
+        });
+      });
+
+  const refresh = () => { startedAt.current = Date.now(); setState("connecting"); load(true); };
 
   useEffect(() => {
     load();
-    // The backend may still be booting when the window opens: retry until it answers.
-    const id = setInterval(() => { if (!caps) load(); }, 2500);
+    const id = setInterval(() => { if (state !== "online") load(); }, 1500);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caps]);
+  }, [state]);
 
-  return <CapsCtx.Provider value={{ caps, online, refresh: () => load(true) }}>{children}</CapsCtx.Provider>;
+  return (
+    <CapsCtx.Provider value={{ caps, state, online: state === "online", refresh }}>
+      {children}
+    </CapsCtx.Provider>
+  );
 }

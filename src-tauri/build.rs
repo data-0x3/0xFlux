@@ -1,3 +1,25 @@
+// Embed a Windows manifest so 0xFLUX always launches elevated (administrator).
+// Elevation is required for packet capture, OS fingerprinting and UDP scanning;
+// the bundled engine, started as a child process, inherits the elevated token.
 fn main() {
-    tauri_build::build()
+    let mut attributes = tauri_build::Attributes::new();
+
+    #[cfg(windows)]
+    {
+        const MANIFEST: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>
+"#;
+        attributes = attributes
+            .windows_attributes(tauri_build::WindowsAttributes::new().app_manifest(MANIFEST));
+    }
+
+    tauri_build::try_build(attributes).expect("failed to run tauri-build");
 }

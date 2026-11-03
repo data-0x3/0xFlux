@@ -1,20 +1,29 @@
-// Loading screen shown while the backend boots (or when it cannot be reached).
-import { IconGhost } from "./icons";
+// Launch screen: a clean, animated hold while the engine boots, and a calm
+// offline state if it never answers. Fully localised.
+import { useI18n } from "../lib/i18n";
 
-export function Boot({ state }: { state: "starting" | "offline" }) {
+export function Boot({ state, onRetry }: { state: "starting" | "offline"; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
-    <div className="boot">
-      <div className="boot-mark"><IconGhost width={30} height={30} /></div>
+    <div className={`boot ${state}`}>
+      <div className="boot-stage">
+        <span className="boot-ring" aria-hidden />
+        <span className="boot-ring boot-ring-2" aria-hidden />
+        <img className="boot-logo" src="logo.png" alt="0xFLUX" width={72} height={72} />
+      </div>
       <div className="boot-name"><b>0x</b>FLUX</div>
+
       {state === "starting" ? (
         <>
           <div className="boot-bar"><span /></div>
-          <p>Starting network engine…</p>
+          <p className="boot-status">{t("boot.starting")}</p>
         </>
       ) : (
         <>
-          <p className="boot-err">The 0xFLUX service is not responding on 127.0.0.1:8787.</p>
-          <p>Start it with <span className="mono">python run.py</span> in the backend folder — this screen reconnects automatically.</p>
+          <p className="boot-err">{t("boot.offline.title")}</p>
+          <p>{t("boot.offline.body")}</p>
+          <p className="boot-hint">{t("boot.offline.hint")}</p>
+          {onRetry && <button className="btn btn-sm" onClick={onRetry}>{t("boot.retry")}</button>}
         </>
       )}
       <div className="boot-foot">developed by 0x3</div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Chip, Empty } from "../components/ui";
 import {
   api, wsUrl, type Device, type Interface, type LatencySummary, type MonitorSample, type ScanSummary,
@@ -10,6 +11,7 @@ import { useCaps } from "../lib/caps";
 import { bps, dateTime, ms, relTime, stateClass } from "../lib/format";
 
 export default function Overview() {
+  const { t } = useI18n();
   const { caps } = useCaps();
   const [sample, setSample] = useState<MonitorSample | null>(null);
   const [activity, setActivity] = useState<{ t: number; v: number }[]>([]);
@@ -46,7 +48,7 @@ export default function Overview() {
   const netStatus = lat == null ? "—" : lat.samples === 0 ? "—" : lat.avg_ms != null ? "online" : "no connectivity";
 
   return (
-    <Page title="Overview" sub="Network status at a glance.">
+    <Page title={t("overview.title")} sub={t("overview.sub")}>
       <div className="grid stats-4 mb">
         <Stat label="Network status" value={netStatus}
           tone={netStatus === "online" ? "open" : netStatus === "no connectivity" ? "down" : undefined}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Empty, useToast } from "../components/ui";
 import { IconPlay, IconStop, IconTrash } from "../components/icons";
 import { ProtocolBars } from "../components/ProtocolBars";
@@ -19,6 +20,7 @@ function endpoint(ip: string | null, port: number | null): string {
 }
 
 export default function Traffic() {
+  const { t } = useI18n();
   const { caps } = useCaps();
   const { advanced } = useMode();
   const toast = useToast();
@@ -110,7 +112,7 @@ export default function Traffic() {
   const pps = status?.duration_s ? status.packets / status.duration_s : null;
 
   return (
-    <Page title="Traffic Analyzer" sub="Live packet metadata — payloads are never decrypted or stored."
+    <Page title={t("traffic.title")} sub={t("traffic.sub")}
       actions={
         <div className="row" style={{ gap: 8 }}>
           <button className="btn btn-sm btn-ghost" onClick={clear} disabled={busy || !packets.length}><IconTrash /> Clear</button>
@@ -331,9 +333,10 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function CaptureUnavailable() {
   const { caps, refresh } = useCaps();
+  const { t } = useI18n();
   const win = caps?.os === "Windows";
   return (
-    <Page title="Traffic Analyzer" sub="Packet capture and protocol analysis."
+    <Page title={t("traffic.title")} sub={t("traffic.sub")}
       actions={<button className="btn btn-sm" onClick={refresh}>Re-detect</button>}>
       <Card>
         <CardHead title="Capture is not available on this machine yet" />

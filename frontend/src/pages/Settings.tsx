@@ -5,10 +5,12 @@ import { IconRefresh } from "../components/icons";
 import { api } from "../lib/api";
 import { useCaps } from "../lib/caps";
 import { useMode } from "../lib/mode";
+import { useI18n } from "../lib/i18n";
 
 export default function Settings() {
   const { caps, refresh } = useCaps();
   const { mode, setMode } = useMode();
+  const { t, lang, setLang } = useI18n();
   const [cfg, setCfg] = useState<Awaited<ReturnType<typeof api.settings>> | null>(null);
   useEffect(() => { api.settings().then(setCfg).catch(() => {}); }, []);
 
@@ -21,12 +23,21 @@ export default function Settings() {
   ];
 
   return (
-    <Page title="Settings" sub="Interface mode, host capabilities and application info."
-      actions={<button className="btn btn-sm" onClick={refresh}><IconRefresh /> Re-detect capabilities</button>}>
+    <Page title={t("settings.title")} sub={t("settings.sub")}
+      actions={<button className="btn btn-sm" onClick={refresh}><IconRefresh /> Re-detect</button>}>
       <div className="grid cols-2" style={{ alignItems: "start" }}>
         <div className="col">
           <Card>
-            <CardHead title="Interface mode" />
+            <CardHead title={t("settings.language")} />
+            <div className="card-pad">
+              <div className="seg seg-full">
+                <button className={lang === "fr" ? "on" : ""} onClick={() => setLang("fr")}>Français</button>
+                <button className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>English</button>
+              </div>
+            </div>
+          </Card>
+          <Card>
+            <CardHead title={mode === "simple" || mode === "advanced" ? (t("common.mode.simple") + " / " + t("common.mode.advanced")) : "Interface mode"} />
             <div className="card-pad col" style={{ gap: 8 }}>
               {(["simple", "advanced"] as const).map((m) => (
                 <button key={m} className={`choice ${mode === m ? "on" : ""}`} onClick={() => setMode(m)} aria-pressed={mode === m}>

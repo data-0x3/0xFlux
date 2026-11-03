@@ -337,28 +337,36 @@
 .compare-stat { display: flex; flex-direction: column; gap: 2px; padding: var(--r-3); border: 1px solid var(--border); border-radius: var(--radius); }
 .compare-stat .mono { font-size: var(--t-xl); }
 
-/* boot screen — the one orchestrated moment */
+/* boot screen — clean, animated, one orchestrated moment */
 .boot {
-  height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; text-align: center; padding: var(--r-5); background: var(--bg);
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; text-align: center; padding: var(--r-5); background: var(--bg);
+  animation: boot-fade .3s var(--ease);
 }
-.boot p { color: var(--text-2); font-size: var(--t-base); max-width: 420px; }
-.boot .boot-err { color: var(--text); }
-.boot-mark {
-  width: 56px; height: 56px; display: grid; place-items: center;
-  border: 1px solid var(--border-hi); border-radius: 12px; animation: boot-in .6s var(--ease) both;
-}
-.boot-name { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-muted); animation: boot-in .6s .08s var(--ease) both; }
+.boot p { color: var(--text-2); font-size: var(--t-base); max-width: 440px; margin: 0 auto; }
+.boot .boot-err { color: var(--text); font-size: var(--t-md); font-weight: 500; }
+.boot .boot-hint { color: var(--text-muted); font-size: var(--t-sm); }
+.boot-stage { position: relative; width: 132px; height: 132px; display: grid; place-items: center; margin-bottom: 4px; }
+.boot-logo { width: 72px; height: 72px; position: relative; z-index: 2;
+  filter: drop-shadow(0 0 14px rgba(255,255,255,.28)); animation: boot-breathe 2.6s var(--ease) infinite; }
+.boot-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--border-hi);
+  animation: boot-pulse 2.4s var(--ease) infinite; }
+.boot-ring-2 { animation-delay: 1.2s; }
+.boot.offline .boot-ring { animation-play-state: paused; opacity: .4; }
+.boot.offline .boot-logo { animation: none; filter: drop-shadow(0 0 10px rgba(255,255,255,.15)); }
+.boot-name { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-muted); }
 .boot-name b { color: var(--text); }
-.boot-bar { width: 160px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.boot-bar span { display: block; width: 40%; height: 100%; background: var(--text); animation: boot-scan 1.1s var(--ease) infinite; }
-.boot-foot { position: fixed; bottom: var(--r-5); font-size: var(--t-xs); color: var(--text-muted); }
-@keyframes boot-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes boot-scan { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
-
-/* narrower windows */
-@media (max-width: 1180px) {
-  .stats-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.boot-bar { width: 180px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+.boot-bar span { display: block; width: 38%; height: 100%; background: var(--text); border-radius: 2px;
+  animation: boot-scan 1.15s var(--ease) infinite; }
+.boot-status { color: var(--text-2); font-size: var(--t-sm); }
+.boot .btn { margin-top: 6px; }
+.boot-foot { position: fixed; bottom: var(--r-5); font-size: var(--t-xs); color: var(--text-muted); letter-spacing: .02em; }
+@keyframes boot-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes boot-breathe { 0%,100% { transform: scale(1); opacity: .95; } 50% { transform: scale(1.05); opacity: 1; } }
+@keyframes boot-pulse { 0% { transform: scale(.7); opacity: .7; } 100% { transform: scale(1.45); opacity: 0; } }
+@keyframes boot-scan { 0% { transform: translateX(-120%); } 100% { transform: translateX(380%); } }
 }
 .table-wrap { overflow-x: auto; }
 .nowrap { white-space: nowrap; }
@@ -393,3 +401,5 @@
   .dev-head { flex-direction: column; text-align: center; }
   .dev-links { grid-template-columns: 1fr; }
 }
+
+.brand-logo { border-radius: 5px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255,255,255,.18)); }

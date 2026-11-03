@@ -17,11 +17,12 @@ import Developer from "./pages/Developer";
 import { Boot } from "./components/Boot";
 
 function Shell() {
-  const { caps, online } = useCaps();
+  const { caps, state, refresh } = useCaps();
   const location = useLocation();
 
-  if (online === null && !caps) return <Boot state="starting" />;
-  if (online === false && !caps) return <Boot state="offline" />;
+  if (state !== "online" && !caps) {
+    return <Boot state={state === "offline" ? "offline" : "starting"} onRetry={refresh} />;
+  }
 
   return (
     <div className="shell">

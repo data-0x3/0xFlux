@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, Chip, Empty, Modal, useToast } from "../components/ui";
 import { IconDownload, IconSearch, IconTrash } from "../components/icons";
 import { api, downloadExport, type ScanCompare, type ScanDetail, type ScanSummary } from "../lib/api";
 import { dateTime, duration, stateClass } from "../lib/format";
 
 export default function History() {
+  const { t } = useI18n();
   const toast = useToast();
   const [scans, setScans] = useState<ScanSummary[] | null>(null);
   const [query, setQuery] = useState("");
@@ -48,7 +50,7 @@ export default function History() {
   const exp = (id: number, f: "json" | "csv" | "pdf") => downloadExport(id, f).catch((e) => toast("err", e.message));
 
   return (
-    <Page title="Scan History" sub="Every scan is saved locally and searchable."
+    <Page title={t("history.title")} sub={t("history.sub")}
       actions={
         <div className="row" style={{ gap: 8 }}>
           <button className="btn btn-sm" disabled={picked.length !== 2} onClick={runCompare}

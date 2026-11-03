@@ -1,24 +1,23 @@
 import { Page } from "../components/Page";
 import { Card } from "../components/ui";
 import { IconGithub, IconTelegram } from "../components/icons";
+import { useI18n } from "../lib/i18n";
 
 const TELEGRAM = "https://t.me/data0x3";
 const GITHUB = "https://github.com/data-0x3";
 
 export default function Developer() {
+  const { t } = useI18n();
   return (
-    <Page title="Developer" sub="The person behind 0xFLUX.">
+    <Page title={t("developer.title")} sub={t("developer.sub")}>
       <div className="dev-wrap">
         <Card className="dev-card">
           <div className="dev-head">
             <img className="dev-avatar" src="0x3.gif" alt="0x3" width={132} height={132} />
             <div className="dev-id">
               <div className="dev-name">0x3</div>
-              <div className="dev-role">Developer · 0xFLUX</div>
-              <p className="dev-bio">
-                Builder of minimalist black-and-white tools. 0xFLUX is a network
-                intelligence and monitoring platform designed and developed by 0x3.
-              </p>
+              <div className="dev-role">{t("developer.role")}</div>
+              <p className="dev-bio">{t("developer.bio")}</p>
             </div>
           </div>
 

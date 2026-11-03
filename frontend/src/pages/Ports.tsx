@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, Chip, Empty, Modal } from "../components/ui";
 import { IconSearch } from "../components/icons";
 import { api } from "../lib/api";
@@ -10,6 +11,7 @@ interface Observed { port: number; protocol: string; hosts: string[]; services: 
 interface Row { port: number; protocol: string; name: string; desc: string | null; observed: Observed | null; }
 
 export default function Ports() {
+  const { t } = useI18n();
   const [ref, setRef] = useState<RefRow[]>([]);
   const [obs, setObs] = useState<Observed[]>([]);
   const [q, setQ] = useState("");
@@ -42,7 +44,7 @@ export default function Ports() {
   }, [rows, q, onlyDetected]);
 
   return (
-    <Page title="Port Explorer" sub="Common ports and services, with what your scans actually detected.">
+    <Page title={t("ports.title")} sub={t("ports.sub")}>
       <Card>
         <div className="card-pad toolbar" style={{ paddingBottom: 12 }}>
           <div className="search" style={{ flex: 1, maxWidth: 420 }}>

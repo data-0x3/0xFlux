@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Chip, Empty, useToast } from "../components/ui";
 import { IconRefresh, IconSpinner, IconTrash } from "../components/icons";
 import { api, type Device } from "../lib/api";
@@ -7,6 +8,7 @@ import { useMode } from "../lib/mode";
 import { relTime } from "../lib/format";
 
 export default function Discovery() {
+  const { t } = useI18n();
   const toast = useToast();
   const { advanced } = useMode();
   const [devices, setDevices] = useState<Device[] | null>(null);
@@ -43,7 +45,7 @@ export default function Discovery() {
   const up = devices?.filter((d) => d.status === "up").length ?? 0;
 
   return (
-    <Page title="Network Discovery"
+    <Page title={t("discovery.title")}
       sub={ctx?.subnet ? `Local network ${ctx.subnet}${ctx.gateway ? ` · gateway ${ctx.gateway}` : " · gateway not found"}` : "Find the devices on your local network."}
       actions={
         <div className="row" style={{ gap: 8 }}>

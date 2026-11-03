@@ -69,7 +69,19 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     ctx = browser.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=2,
                               color_scheme="dark")
-    ctx.add_init_script("localStorage.setItem('flux.mode','advanced')")
+    ctx.add_init_script("localStorage.setItem('flux.mode','advanced'); localStorage.setItem('flux.lang','fr')")
+    # --- boot screens: block the API so the launch animation shows ---
+    boot = ctx.new_page()
+    boot.route("**/api/**", lambda r: r.abort())
+    boot.goto(UI + "/")
+    time.sleep(1.5)
+    boot.screenshot(path=str(OUT / "00-boot-starting.png"))
+    print("saved 00-boot-starting")
+    time.sleep(13)
+    boot.screenshot(path=str(OUT / "00-boot-offline.png"))
+    print("saved 00-boot-offline")
+    boot.close()
+
     page = ctx.new_page()
 
     def go(route: str, settle: float = 2.5) -> None:

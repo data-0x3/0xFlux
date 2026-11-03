@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Page } from "../components/Page";
+import { useI18n } from "../lib/i18n";
 import { Card, CardHead, Chip, Empty, useToast } from "../components/ui";
 import { IconDownload, IconPlay, IconStop } from "../components/icons";
 import { downloadExport, type HostRow } from "../lib/api";
@@ -37,6 +38,7 @@ function parsePorts(text: string): { ports: number[] | null; error: string | nul
 }
 
 export default function Scanner() {
+  const { t } = useI18n();
   const toast = useToast();
   const { caps } = useCaps();
   const { advanced } = useMode();
@@ -69,7 +71,7 @@ export default function Scanner() {
   const pct = progress && progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
 
   return (
-    <Page title="Network Scanner" sub="Scan networks and devices you own or are authorised to assess.">
+    <Page title={t("scanner.title")} sub={t("scanner.sub")}>
       <div className="grid" style={{ gridTemplateColumns: "360px minmax(0,1fr)", alignItems: "start" }}>
         <Card>
           <CardHead title="Scan configuration" hint={`engine: ${nmap ? "nmap" : "python (built-in)"}`} />
